@@ -1,0 +1,20 @@
+# 2024 amicroservice author.
+
+services:
+  user_service:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - APP_NAME=userservice
+      - GRPC_PORT=50053
+      - JWT_SECRET=secret  
+      - DSN=postgresql://postgres:postgres@host.docker.internal:5432/postgres 
+    expose:
+      - "50053"
+    networks:
+      - services_network
+  
+networks:
+  services_network:
+    external: true

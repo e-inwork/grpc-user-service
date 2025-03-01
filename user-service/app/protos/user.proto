@@ -1,0 +1,99 @@
+// 2024 amicroservice author.
+
+syntax="proto3";
+
+// Defines the user-related package and services.
+package user;
+
+// Importing necessary files for timestamp fields and custom validation.
+import "google/protobuf/timestamp.proto"; // Used for timestamp fields (created_at, updated_at).
+import "validate.proto"; // Used for field validation rules.
+
+option go_package = "github.com/opensourcemicroservice/userservice/proto;user";
+
+service UserService {
+    rpc Register(RegisterRequest) returns (User) {}
+
+    rpc Login(LoginRequest) returns (UserToken) {}
+
+    rpc Get(GetRequest) returns (User) {}
+
+    rpc Update(UpdateRequest) returns (User) {}
+}
+
+message RegisterRequest {
+    string group_id = 1 [
+        (buf.validate.field).required = true
+    ];
+
+    string email = 2 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.email = true
+    ];
+
+    string password = 3 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.pattern = "^[a-zA-Z0-9]*$"
+    ];
+
+    string first_name = 4 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1, 
+        (buf.validate.field).string.max_len = 100
+    ];
+
+    string last_name = 5 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.min_len = 1, 
+        (buf.validate.field).string.max_len = 100
+    ];
+}
+
+// Represents a user entity with ID, timestamps, and basic information.
+message User {
+    string group_id = 1;  // Group ID  
+    string id = 2; // Unique identifier for the user.
+    google.protobuf.Timestamp created_at = 3; // Timestamp for when the user was created.
+    google.protobuf.Timestamp updated_at = 4; // Timestamp for when the user was last updated.
+    string email = 5; // User's email address.
+    string first_name = 6; // User's first name.
+    string last_name = 7; // User's last name.
+}
+
+// Request message for user login.
+message LoginRequest {
+    string group_id = 1 [
+        (buf.validate.field).required = true
+    ];  // Group ID  
+    string email = 2 [
+        (buf.validate.field).required = true,
+        (buf.validate.field).string.email = true
+    ]; // User's email for login.
+    string password = 4 [
+        (buf.validate.field).required = true
+    ]; // User's password for login.
+}
+
+// Response message for successful login, containing the authentication token.
+message UserToken {
+    string token = 1; // The authentication token for the user session.
+}
+
+// Request message for retrieving user data.
+message GetRequest {
+    // This can be expanded to include parameters such as user ID or filters.
+}
+
+// Request message for updating user information.
+message UpdateRequest {
+    string email = 1; // Optional updated email.
+    string password = 2; // Optional updated password.
+    string first_name = 3; // Optional updated first name.
+    string last_name = 4; // Optional updated last name.
+}
+
+// The Error field by the code
+message ErrorField {
+    string name = 1; // The field name: "email", "password", etc.
+    string code = 2; // The error code: "invalid", "already_exists", "required", etc.
+}
